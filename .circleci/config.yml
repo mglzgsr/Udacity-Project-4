@@ -1,5 +1,8 @@
 version: 2.1
-
+parameters:
+  workflow-id:
+    type: string
+    default: "${CIRCLE_WORKFLOW_ID}"
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -39,7 +42,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Build front-end
           command: |
@@ -48,8 +52,10 @@ jobs:
             sudo npm install
             sudo npm run build
       - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
+          paths:
+            - frontend/node_modules
+            - frontend/dist
+          key: frontend-build-${CIRCLE_WORKFLOW_ID}
 
   build-backend:
     docker:
@@ -57,7 +63,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
+          keys:
+            - backend-build-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Back-end build
           command: |
@@ -66,8 +73,11 @@ jobs:
             npm i
             npm run build
       - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
+          paths:
+            - backend/node_modules
+            - backend/dist
+          key:
+            - backend-build-${CIRCLE_WORKFLOW_ID}
 
   test-frontend:
     docker:
