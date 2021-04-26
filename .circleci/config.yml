@@ -44,7 +44,8 @@ jobs:
           name: Build front-end
           command: |
             cd frontend
-            sudo npm install webpack-dev-server -g
+#            sudo npm install webpack-dev-server -g
+            rm -rf node_modules/
             sudo npm install
             sudo npm run build
       - save_cache:
@@ -62,6 +63,7 @@ jobs:
           name: Back-end build
           command: |
             cd backend
+            rm -rf node_modules/
             npm i
             npm run build
       - save_cache:
