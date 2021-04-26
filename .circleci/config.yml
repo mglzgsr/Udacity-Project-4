@@ -76,8 +76,7 @@ jobs:
           paths:
             - backend/node_modules
             - backend/dist
-          key:
-            - backend-build-${CIRCLE_WORKFLOW_ID}
+          key: backend-build-${CIRCLE_WORKFLOW_ID}
 
   test-frontend:
     docker:
@@ -85,7 +84,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: ["frontend-build"]  # -<< pipeline.id >>"
+          keys: frontend-build-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Font-end test
           command: |
@@ -98,7 +97,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: ["backend-build"]  # -<< pipeline.id >>"
+          keys: backend-build-${CIRCLE_WORKFLOW_ID}
       - run:
           name: Back-end test
           command: |
