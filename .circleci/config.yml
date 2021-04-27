@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  slack: circleci/slack@4.4.0
 parameters:
   workflow-id:
     type: string
@@ -56,6 +58,9 @@ jobs:
             - frontend/node_modules
             - frontend/dist
           key: frontend-build-${CIRCLE_WORKFLOW_ID}
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   build-backend:
     docker:
@@ -77,6 +82,9 @@ jobs:
             - backend/node_modules
             - backend/dist
           key: backend-build-${CIRCLE_WORKFLOW_ID}
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   test-frontend:
     docker:
@@ -90,6 +98,9 @@ jobs:
           command: |
             cd frontend
             npm run test
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   test-backend:
     docker:
@@ -103,6 +114,9 @@ jobs:
           command: |
             cd backend
             npm run test
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   scan-frontend:
     docker:
@@ -116,7 +130,10 @@ jobs:
           command: |
             cd backend
             npm update
-            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
 
   scan-backend:
     docker:
@@ -130,8 +147,11 @@ jobs:
           command: |
             cd backend
             npm update
-            npm audit --audit-level=critical
-#
+            npm audit fix --audit-level=critical --force
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+
 #  deploy-infrastructure:
 #    docker:
 #      # Docker image here that supports AWS CLI
