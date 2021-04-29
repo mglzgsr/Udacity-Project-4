@@ -4,7 +4,7 @@ orbs:
 parameters:
   workflow-id:
     type: string
-    default: "${CIRCLE_WORKFLOW_ID}"
+    default: "${CIRCLE_WORKFLOW_ID:0:7}"
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -45,7 +45,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID}
+            - frontend-build-<< pipeline.parameters.workflow-id >>
       - run:
           name: Build front-end
           command: |
@@ -57,7 +57,7 @@ jobs:
           paths:
             - frontend/node_modules
             - frontend/dist
-          key: frontend-build-${CIRCLE_WORKFLOW_ID}
+          key: frontend-build-<< pipeline.parameters.workflow-id >>
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -69,7 +69,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - backend-build-${CIRCLE_WORKFLOW_ID}
+            - backend-build-<< pipeline.parameters.workflow-id >>
       - run:
           name: Back-end build
           command: |
@@ -81,7 +81,7 @@ jobs:
           paths:
             - backend/node_modules
             - backend/dist
-          key: backend-build-${CIRCLE_WORKFLOW_ID}
+          key: backend-build-<< pipeline.parameters.workflow-id >>
       - slack/notify:
           event: fail
           template: basic_fail_1
@@ -92,7 +92,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: frontend-build-${CIRCLE_WORKFLOW_ID}
+          keys: frontend-build-<< pipeline.parameters.workflow-id >>
       - run:
           name: Font-end test
           command: |
@@ -108,7 +108,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: backend-build-${CIRCLE_WORKFLOW_ID}
+          keys: backend-build-<< pipeline.parameters.workflow-id >>
       - run:
           name: Back-end test
           command: |
@@ -124,7 +124,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: frontend-build-${CIRCLE_WORKFLOW_ID}
+          keys: frontend-build-<< pipeline.parameters.workflow-id >>
       - run:
           name: Font-end security scan
           command: |
@@ -141,7 +141,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: backend-build-${CIRCLE_WORKFLOW_ID}
+          keys: backend-build-<< pipeline.parameters.workflow-id >>
       - run:
           name: Back-end security scan
           command: |
@@ -164,17 +164,17 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
-              --stack-name backend-${CIRCLE_WORKFLOW_ID} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
+              --stack-name backend-<< pipeline.parameters.workflow-id >> \
+              --parameter-overrides ID=<< pipeline.parameters.workflow-id >>
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              #--tags project=udapeople \
-              #--stack-name "frontend-<< pipeline.parameters.workflow-id >>" \
-              #--parameter-overrides ID="<< pipeline.parameters.workflow-id >>"
-              exit 1
+              --tags project=udapeople \
+              --stack-name "frontend-<< pipeline.parameters.workflow-id >>" \
+              --parameter-overrides ID="<< pipeline.parameters.workflow-id >>"
+
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -184,7 +184,7 @@ jobs:
               --query "Reservations[*].Instances[*].PublicIpAddress" \
               --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
-            exit 1
+
       - persist_to_workspace:
           root: ~/
           paths:
