@@ -174,7 +174,6 @@ jobs:
               --tags project=udapeople \
               --stack-name "frontend-<< pipeline.parameters.workflow-id >>" \
               --parameter-overrides ID="<< pipeline.parameters.workflow-id >>"
-
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -197,7 +196,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["5c:4b:4a:9b:43:d9:c5:79:61:88:16:b7:1c:8f:c4:3a"]
-      - attach workspace:
+      - attach_workspace:
           at: ~/
       - run:
           name: Install dependencies
